@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WEB EXHIBITION</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #222;
+      background-color: #f5f5f5;
+      line-height: 1.5;
+    }
+    img { width: 100%; height: auto; display: block; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+    /* ① トップページ */
+    #top-page {
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      min-height: 100vh; text-align: center; padding: 20px; background: #fff;
+    }
+    .main-visual { width: 100%; max-width: 400px; margin-bottom: 24px; border-radius: 4px; }
+    .exhibition-title { font-size: 20px; font-weight: bold; letter-spacing: 2px; margin-bottom: 24px; }
+    .btn-enter {
+      padding: 14px 48px; background-color: #000; color: #fff; font-size: 15px;
+      letter-spacing: 2px; border-radius: 30px; text-transform: uppercase; font-weight: bold;
+    }
+
+    /* ② カタログ本体 */
+    #catalog-page {
+      display: none; max-width: 600px; margin: 0 auto; background: #fff;
+      min-height: 100vh; padding-bottom: 90px; position: relative;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+    
+    .search-container {
+      padding: 12px 16px; position: sticky; top: 0;
+      background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);
+      z-index: 10; border-bottom: 1px solid #eee;
+    }
+    .search-input {
+      width: 100%; padding: 10px 14px; font-size: 16px; border: 1px solid #ccc;
+      border-radius: 6px; outline: none; background: #fafafa;
+    }
+    .search-input:focus { border-color: #000; background: #fff; }
+
+    .item-header { padding: 20px 16px 12px; }
+    .item-id { font-size: 14px; color: #777; font-weight: 700; letter-spacing: 0.5px; }
+    .item-name { font-size: 20px; font-weight: 800; margin: 4px 0 8px; }
+    .item-meta-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; }
+    .item-price { font-weight: 700; font-size: 15px; }
+    .item-delivery { color: #555; }
+
+    .color-section { margin-top: 16px; border-top: 8px solid #f9f9f9; padding-top: 16px; }
+    .color-title { font-size: 13px; font-weight: 700; padding: 0 16px 10px; color: #444; letter-spacing: 0.5px; }
+    .image-list { display: flex; flex-direction: column; gap: 16px; padding: 0 16px; margin-bottom: 16px; }
+    .image-card { background: #fdfdfd; border-radius: 6px; overflow: hidden; border: 1px solid #eee; }
+    
+    /* NO IMAGEのプレースホルダー表示用 */
+    .no-image-box {
+      height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+      color: #999;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .nav-btn {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px; background: rgba(0, 0, 0, 0.6); color: #fff;
+      font-size: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 20;
+    }
+    .prev-btn { left: 12px; }
+    .next-btn { right: 12px; }
+    .nav-btn:disabled { opacity: 0.15; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <!-- ① トップページ -->
+  <section id="top-page">
+    <img src="images/main_visual.jpg" alt="Collection Visual" class="main-visual" onerror="this.style.display='none'">
+    <h1 class="exhibition-title">2027 S/S COLLECTION</h1>
+    <button class="btn-enter" onclick="startCatalog()">Enter</button>
+  </section>
+
+  <!-- ② カタログ本体 -->
+  <main id="catalog-page">
+    <div class="search-container">
+      <input type="search" id="searchInput" class="search-input" placeholder="品番を入力して検索 (例: 7217107104)" onkeydown="handleSearch(event)">
+    </div>
+
+    <div class="item-header">
+      <div class="item-id" id="displayId"></div>
+      <div class="item-name" id="displayName"></div>
+      <div class="item-meta-row">
+        <div class="item-price" id="displayPrice"></div>
+        <div class="item-delivery" id="displayDelivery"></div>
+      </div>
+    </div>
+
+    <div id="colorContainer"></div>
+
+    <button class="nav-btn prev-btn" id="prevBtn" onclick="changePage(-1)">‹</button>
+    <button class="nav-btn next-btn" id="nextBtn" onclick="changePage(1)">›</button>
+  </main>
+
+  <!-- 外部データファイルの読み込み -->
+  <script src="products.js"></script>
+
+  <script>
+    let currentIndex = 0;
+
+    function startCatalog() {
+      if (typeof products === 'undefined' || products.length === 0) {
+        alert('商品データ（products.js）が見つかりません。');
+        return;
+      }
+      document.getElementById('top-page').style.display = 'none';
+      document.getElementById('catalog-page').style.display = 'block';
+      renderProduct(0);
+    }
+
+    function renderProduct(index) {
+      if (index < 0 || index >= products.length) return;
+      currentIndex = index;
+      const item = products[currentIndex];
+
+      document.getElementById('displayId').textContent = item.id;
+      document.getElementById('displayName').textContent = item.name;
+      
+      const priceTaxIn = Math.round(item.priceEx * 1.1).toLocaleString();
+      const priceTaxEx = item.priceEx.toLocaleString();
+      document.getElementById('displayPrice').textContent = `¥${priceTaxEx} (税込 ¥${priceTaxIn})`;
+      document.getElementById('displayDelivery').textContent = item.delivery;
+
+      const container = document.getElementById('colorContainer');
+      container.innerHTML = '';
+
+      item.colors.forEach(col => {
+        const colorSec = document.createElement('div');
+        colorSec.className = 'color-section';
+
+        // 命名規則: images/[品番]_[色番号]_[f/r].jpg
+        const frontSrc = `images/${item.id}_${col.code}_f.jpg`;
+        const rearSrc = `images/${item.id}_${col.code}_r.jpg`;
+
+        colorSec.innerHTML = `
+          <div class="color-title">COLOR: ${col.code} ${col.name}</div>
+          <div class="image-list">
+            <div class="image-card">
+              <img src="${frontSrc}" alt="${item.id}_${col.code}_Front" loading="lazy" onerror="this.outerHTML='<div class=\\'no-image-box\\'>NO IMAGE (FRONT)</div>'">
+            </div>
+            <div class="image-card">
+              <img src="${rearSrc}" alt="${item.id}_${col.code}_Rear" loading="lazy" onerror="this.outerHTML='<div class=\\'no-image-box\\'>NO IMAGE (REAR)</div>'">
+            </div>
+          </div>
+        `;
+        container.appendChild(colorSec);
+      });
+
+      document.getElementById('prevBtn').disabled = (currentIndex === 0);
+      document.getElementById('nextBtn').disabled = (currentIndex === products.length - 1);
+
+      window.scrollTo(0, 0);
+    }
+
+    function changePage(direction) {
+      const nextIndex = currentIndex + direction;
+      if (nextIndex >= 0 && nextIndex < products.length) {
+        renderProduct(nextIndex);
+      }
+    }
+
+    function handleSearch(e) {
+      if (e.key === 'Enter') {
+        const input = document.getElementById('searchInput');
+        const query = input.value.trim().toUpperCase();
+
+        input.blur();
+
+        if (!query) return;
+
+        const targetIndex = products.findIndex(p => p.id.toUpperCase() === query);
+        if (targetIndex !== -1) {
+          renderProduct(targetIndex);
+          input.value = '';
+        } else {
+          alert('該当する品番が見つかりませんでした: ' + query);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

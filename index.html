@@ -27,7 +27,27 @@
       letter-spacing: 2px; border-radius: 30px; text-transform: uppercase; font-weight: bold;
     }
 
-    /* ② カタログ本体 */
+    /* ② 注意喚起ページ（新規追加） */
+    #notice-page {
+      display: none; flex-direction: column; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 24px; background: #fff; text-align: center;
+    }
+    .notice-card {
+      max-width: 440px; width: 100%; padding: 32px 20px;
+      background: #fafafa; border: 1px solid #eee; border-radius: 8px;
+    }
+    .notice-title {
+      font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #666; margin-bottom: 16px;
+    }
+    .notice-text {
+      font-size: 14px; line-height: 1.8; color: #333; text-align: left; margin-bottom: 24px;
+    }
+    .btn-skip {
+      padding: 10px 32px; background-color: #333; color: #fff; font-size: 13px;
+      letter-spacing: 1px; border-radius: 20px; font-weight: 600;
+    }
+
+    /* ③ カタログ本体 */
     #catalog-page {
       display: none; max-width: 600px; margin: 0 auto; background: #fff;
       min-height: 100vh; padding-bottom: 90px; position: relative;
@@ -87,10 +107,21 @@
   <section id="top-page">
     <img src="images/main_visual.jpg" alt="Collection Visual" class="main-visual" onerror="this.style.display='none'">
     <h1 class="exhibition-title">2027 S/S COLLECTION</h1>
-    <button class="btn-enter" onclick="startCatalog()">Enter</button>
+    <button class="btn-enter" onclick="showNotice()">Enter</button>
   </section>
 
-  <!-- ② カタログ本体 -->
+  <!-- ② 注意喚起ページ（新規追加） -->
+  <section id="notice-page">
+    <div class="notice-card">
+      <div class="notice-title">NOTICE</div>
+      <p class="notice-text">
+        『GEMINI』を使って画像を整えています。展示会発注時の補完資料としての役割を想定しており、使用画像の保存・転用はお避け下さい。
+      </p>
+      <button class="btn-skip" onclick="startCatalog()">SKIP</button>
+    </div>
+  </section>
+
+  <!-- ③ カタログ本体 -->
   <main id="catalog-page">
     <div class="search-container">
       <input type="search" id="searchInput" class="search-input" placeholder="品番を入力して検索（半角数字で入力）" onkeydown="handleSearch(event)">
@@ -116,13 +147,30 @@
 
   <script>
     let currentIndex = 0;
+    let noticeTimer = null;
 
-    function startCatalog() {
+    // ENTERを押したときに注意画面を表示（10秒タイマー開始）
+    function showNotice() {
       if (typeof products === 'undefined' || products.length === 0) {
         alert('商品データ（products.js）が見つかりません。');
         return;
       }
       document.getElementById('top-page').style.display = 'none';
+      document.getElementById('notice-page').style.display = 'flex';
+
+      // 10秒後に自動遷移
+      noticeTimer = setTimeout(startCatalog, 10000);
+    }
+
+    // カタログ本体を表示
+    function startCatalog() {
+      // SKIPボタンや自動遷移時のタイマー解除
+      if (noticeTimer) {
+        clearTimeout(noticeTimer);
+      }
+
+      document.getElementById('top-page').style.display = 'none';
+      document.getElementById('notice-page').style.display = 'none';
       document.getElementById('catalog-page').style.display = 'block';
       renderProduct(0);
     }

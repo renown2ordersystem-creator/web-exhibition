@@ -15,70 +15,178 @@
     img { width: 100%; height: auto; display: block; }
     button { cursor: pointer; border: none; background: none; font-family: inherit; }
 
-    /* ① トップページ */
+    /* ① トップページ（スマホ1画面にピッタリ収まるように調整） */
     #top-page {
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      min-height: 100vh; text-align: center; padding: 20px; background: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      height: 100dvh; /* スマホブラウザのバーを考慮した正確な画面高 */
+      padding: 16px;
+      background: #fff;
+      overflow: hidden; /* はみ出しスクロール防止 */
+      text-align: center;
     }
-    .main-visual { width: 100%; max-width: 400px; margin-bottom: 24px; border-radius: 4px; }
-    .exhibition-title { font-size: 20px; font-weight: bold; letter-spacing: 2px; margin-bottom: 24px; }
+    .main-visual {
+      width: auto;
+      max-width: 100%;
+      max-height: 60dvh; /* 写真の高さを画面の60%以内に自動制限 */
+      object-fit: contain;
+      margin-bottom: 16px;
+      border-radius: 4px;
+    }
+    .exhibition-title {
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
     .btn-enter {
-      padding: 14px 48px; background-color: #000; color: #fff; font-size: 15px;
-      letter-spacing: 2px; border-radius: 30px; text-transform: uppercase; font-weight: bold;
+      padding: 12px 48px;
+      background-color: #000;
+      color: #fff;
+      font-size: 15px;
+      letter-spacing: 2px;
+      border-radius: 30px;
+      text-transform: uppercase;
+      font-weight: bold;
+      flex-shrink: 0;
     }
 
-    /* ② 注意喚起ページ（新規追加） */
+    /* ② 注意喚起ページ */
     #notice-page {
-      display: none; flex-direction: column; justify-content: center; align-items: center;
-      min-height: 100vh; padding: 24px; background: #fff; text-align: center;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      height: 100dvh;
+      padding: 24px;
+      background: #fff;
+      text-align: center;
     }
     .notice-card {
-      max-width: 440px; width: 100%; padding: 32px 20px;
-      background: #fafafa; border: 1px solid #eee; border-radius: 8px;
+      max-width: 440px;
+      width: 100%;
+      padding: 32px 20px;
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 8px;
     }
     .notice-title {
-      font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #666; margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #666;
+      margin-bottom: 16px;
     }
     .notice-text {
-      font-size: 14px; line-height: 1.8; color: #333; text-align: left; margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: #333;
+      text-align: left;
+      margin-bottom: 24px;
     }
     .btn-skip {
-      padding: 10px 32px; background-color: #333; color: #fff; font-size: 13px;
-      letter-spacing: 1px; border-radius: 20px; font-weight: 600;
+      padding: 10px 32px;
+      background-color: #333;
+      color: #fff;
+      font-size: 13px;
+      letter-spacing: 1px;
+      border-radius: 20px;
+      font-weight: 600;
     }
 
-    /* ③ カタログ本体 */
+    /* ③ カタログ本体（既存レイアウトを完全保持） */
     #catalog-page {
-      display: none; max-width: 600px; margin: 0 auto; background: #fff;
-      min-height: 100vh; padding-bottom: 90px; position: relative;
+      display: none;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      min-height: 100vh;
+      padding-bottom: 90px;
+      position: relative;
       box-shadow: 0 0 20px rgba(0,0,0,0.05);
     }
     
     .search-container {
-      padding: 12px 16px; position: sticky; top: 0;
-      background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);
-      z-index: 10; border-bottom: 1px solid #eee;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 10;
+      border-bottom: 1px solid #eee;
     }
     .search-input {
-      width: 100%; padding: 10px 14px; font-size: 16px; border: 1px solid #ccc;
-      border-radius: 6px; outline: none; background: #fafafa;
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+      background: #fafafa;
     }
-    .search-input:focus { border-color: #000; background: #fff; }
+    .search-input:focus {
+      border-color: #000;
+      background: #fff;
+    }
 
-    .item-header { padding: 20px 16px 12px; }
-    /* 品番：品名と同じサイズ・太さ・色に変更 */
-    .item-id { font-size: 20px; color: #222; font-weight: 800; letter-spacing: 0.5px; }
-    .item-name { font-size: 20px; font-weight: 800; margin: 4px 0 8px; }
-    .item-meta-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; }
-    .item-price { font-weight: 700; font-size: 15px; }
-    .item-delivery { color: #555; }
+    .item-header {
+      padding: 20px 16px 12px;
+    }
+    .item-id {
+      font-size: 20px;
+      color: #222;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .item-name {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 4px 0 8px;
+    }
+    .item-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 14px;
+    }
+    .item-price {
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .item-delivery {
+      color: #555;
+    }
 
-    .color-section { margin-top: 16px; border-top: 8px solid #f9f9f9; padding-top: 16px; }
-    .color-title { font-size: 13px; font-weight: 700; padding: 0 16px 10px; color: #444; letter-spacing: 0.5px; }
-    .image-list { display: flex; flex-direction: column; gap: 16px; padding: 0 16px; margin-bottom: 16px; }
-    .image-card { background: #fdfdfd; border-radius: 6px; overflow: hidden; border: 1px solid #eee; }
+    .color-section {
+      margin-top: 16px;
+      border-top: 8px solid #f9f9f9;
+      padding-top: 16px;
+    }
+    .color-title {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 0 16px 10px;
+      color: #444;
+      letter-spacing: 0.5px;
+    }
+    .image-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 0 16px;
+      margin-bottom: 16px;
+    }
+    .image-card {
+      background: #fdfdfd;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
     
-    /* NO IMAGEのプレースホルダー表示用 */
     .no-image-box {
       height: 350px;
       display: flex;
@@ -92,9 +200,19 @@
     }
 
     .nav-btn {
-      position: fixed; top: 50%; transform: translateY(-50%);
-      width: 44px; height: 44px; background: rgba(0, 0, 0, 0.6); color: #fff;
-      font-size: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 20;
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-size: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
     }
     .prev-btn { left: 12px; }
     .next-btn { right: 12px; }
@@ -110,7 +228,7 @@
     <button class="btn-enter" onclick="showNotice()">Enter</button>
   </section>
 
-  <!-- ② 注意喚起ページ（新規追加） -->
+  <!-- ② 注意喚起ページ -->
   <section id="notice-page">
     <div class="notice-card">
       <div class="notice-title">NOTICE</div>
@@ -205,7 +323,6 @@
         `;
 
         // 2. 背面画像(_r) ＆ 拡大写真(_z1 〜 _z5)
-        // ※画像が存在しない場合はカード枠ごと自動で消去（スキップ）
         const extraSuffixes = ['_r', '_z1', '_z2', '_z3', '_z4', '_z5'];
         extraSuffixes.forEach(suf => {
           const imgSrc = `images/${item.id}_${col.code}${suf}.jpg`;

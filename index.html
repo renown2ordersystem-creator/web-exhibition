@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WEB EXHIBITION</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #222;
+      background-color: #f5f5f5;
+      line-height: 1.5;
+    }
+    img { width: 100%; height: auto; display: block; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+    /* ① トップページ（キーボード展開時も崩れないレスポンシブ設計） */
+    #top-page {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      height: 100dvh;
+      padding: 16px;
+      background: #fff;
+      text-align: center;
+      overflow: hidden;
+    }
+    .main-visual {
+      width: auto;
+      max-width: 100%;
+      max-height: 52dvh; /* キーボード展開時に自動縮小 */
+      object-fit: contain;
+      margin-bottom: 12px;
+      border-radius: 4px;
+      flex-shrink: 1; /* 縦幅が狭いときに画像を縮小 */
+      min-height: 80px;
+    }
+    .top-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0; /* タイトル・入力欄・ボタンは縮めずに維持 */
+      width: 100%;
+      max-width: 280px;
+    }
+    .exhibition-title {
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+    .password-input {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fafafa;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .password-input:focus {
+      border-color: #000;
+      background: #fff;
+    }
+    .btn-enter {
+      width: 100%;
+      padding: 12px 0;
+      background-color: #000;
+      color: #fff;
+      font-size: 14px;
+      letter-spacing: 2px;
+      border-radius: 30px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    /* ② 注意喚起ページ */
+    #notice-page {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      height: 100dvh;
+      padding: 24px;
+      background: #fff;
+      text-align: center;
+    }
+    .notice-card {
+      max-width: 440px;
+      width: 100%;
+      padding: 32px 20px;
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+    .notice-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+    .notice-text {
+      font-size: 14px;
+      line-height: 1.8;
+      color: #333;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+    .btn-skip {
+      padding: 10px 32px;
+      background-color: #333;
+      color: #fff;
+      font-size: 13px;
+      letter-spacing: 1px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* ③ カタログ本体（既存レイアウトを完全保持） */
+    #catalog-page {
+      display: none;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      min-height: 100vh;
+      padding-bottom: 90px;
+      position: relative;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+    
+    .search-container {
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      z-index: 10;
+      border-bottom: 1px solid #eee;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+      background: #fafafa;
+    }
+    .search-input:focus {
+      border-color: #000;
+      background: #fff;
+    }
+
+    .item-header {
+      padding: 20px 16px 12px;
+    }
+    .item-id {
+      font-size: 20px;
+      color: #222;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .item-name {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 4px 0 8px;
+    }
+    .item-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 14px;
+    }
+    .item-price {
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .item-delivery {
+      color: #555;
+    }
+
+    .color-section {
+      margin-top: 16px;
+      border-top: 8px solid #f9f9f9;
+      padding-top: 16px;
+    }
+    .color-title {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 0 16px 10px;
+      color: #444;
+      letter-spacing: 0.5px;
+    }
+    .image-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 0 16px;
+      margin-bottom: 16px;
+    }
+    .image-card {
+      background: #fdfdfd;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
+    
+    .no-image-box {
+      height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+      color: #999;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .nav-btn {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-size: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+    .prev-btn { left: 12px; }
+    .next-btn { right: 12px; }
+    .nav-btn:disabled { opacity: 0.15; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <!-- ① トップページ（パスワード入力フォーム） -->
+  <section id="top-page">
+    <img src="images/main_visual.jpg" alt="Collection Visual" class="main-visual" onerror="this.style.display='none'">
+    <div class="top-content">
+      <h1 class="exhibition-title">2027 S/S COLLECTION</h1>
+      <input type="password" id="passInput" class="password-input" placeholder="PASSWORD" onkeydown="handlePassKey(event)">
+      <button class="btn-enter" onclick="checkPassword()">Enter</button>
+    </div>
+  </section>
+
+  <!-- ② 注意喚起ページ -->
+  <section id="notice-page">
+    <div class="notice-card">
+      <div class="notice-title">NOTICE</div>
+      <p class="notice-text">
+        『GEMINI』を使って画像を整えています。展示会発注時の補完資料としての役割を想定しており、使用画像の保存・転用はお避け下さい。
+      </p>
+      <button class="btn-skip" onclick="startCatalog()">SKIP</button>
+    </div>
+  </section>
+
+  <!-- ③ カタログ本体 -->
+  <main id="catalog-page">
+    <div class="search-container">
+      <input type="search" id="searchInput" class="search-input" placeholder="品番を入力して検索（半角数字で入力）" onkeydown="handleSearch(event)">
+    </div>
+
+    <div class="item-header">
+      <div class="item-id" id="displayId"></div>
+      <div class="item-name" id="displayName"></div>
+      <div class="item-meta-row">
+        <div class="item-price" id="displayPrice"></div>
+        <div class="item-delivery" id="displayDelivery"></div>
+      </div>
+    </div>
+
+    <div id="colorContainer"></div>
+
+    <button class="nav-btn prev-btn" id="prevBtn" onclick="changePage(-1)">‹</button>
+    <button class="nav-btn next-btn" id="nextBtn" onclick="changePage(1)">›</button>
+  </main>
+
+  <!-- 外部データファイルの読み込み -->
+  <script src="products.js"></script>
+
+  <script>
+    let currentIndex = 0;
+    let noticeTimer = null;
+    const CORRECT_PASS = "tmac35"; // パスワード設定
+
+    // パスワード入力欄でEnterキーが押された時の処理
+    function handlePassKey(e) {
+      if (e.key === 'Enter') {
+        checkPassword();
+      }
+    }
+
+    // パスワード認証判定
+    function checkPassword() {
+      const passField = document.getElementById('passInput');
+      const inputVal = passField.value.trim();
+
+      if (inputVal === CORRECT_PASS) {
+        passField.blur(); // キーボードを閉じる
+        showNotice();
+      } else {
+        alert('パスワードが正しくありません。');
+        passField.value = '';
+        passField.focus();
+      }
+    }
+
+    // 認証成功後：注意画面を表示（10秒タイマー開始）
+    function showNotice() {
+      if (typeof products === 'undefined' || products.length === 0) {
+        alert('商品データ（products.js）が見つかりません。');
+        return;
+      }
+      document.getElementById('top-page').style.display = 'none';
+      document.getElementById('notice-page').style.display = 'flex';
+
+      // 10秒後に自動遷移
+      noticeTimer = setTimeout(startCatalog, 10000);
+    }
+
+    // カタログ本体を表示
+    function startCatalog() {
+      if (noticeTimer) {
+        clearTimeout(noticeTimer);
+      }
+
+      document.getElementById('top-page').style.display = 'none';
+      document.getElementById('notice-page').style.display = 'none';
+      document.getElementById('catalog-page').style.display = 'block';
+      renderProduct(0);
+    }
+
+    function renderProduct(index) {
+      if (index < 0 || index >= products.length) return;
+      currentIndex = index;
+      const item = products[currentIndex];
+
+      document.getElementById('displayId').textContent = item.id;
+      document.getElementById('displayName').textContent = item.name;
+      
+      const priceTaxIn = Math.round(item.priceEx * 1.1).toLocaleString();
+      const priceTaxEx = item.priceEx.toLocaleString();
+      document.getElementById('displayPrice').textContent = `¥${priceTaxEx} (税込 ¥${priceTaxIn})`;
+      document.getElementById('displayDelivery').textContent = item.delivery;
+
+      const container = document.getElementById('colorContainer');
+      container.innerHTML = '';
+
+      item.colors.forEach(col => {
+        const colorSec = document.createElement('div');
+        colorSec.className = 'color-section';
+
+        // 1. 前面画像 (品番_色番.jpg)
+        const frontSrc = `images/${item.id}_${col.code}.jpg`;
+        
+        let imagesHtml = `
+          <div class="image-card">
+            <img src="${frontSrc}" alt="${item.id}_${col.code}_Front" loading="lazy" onerror="this.outerHTML='<div class=\\'no-image-box\\'>NO IMAGE</div>'">
+          </div>
+        `;
+
+        // 2. 背面画像(_r) ＆ 拡大写真(_z1 〜 _z5)
+        const extraSuffixes = ['_r', '_z1', '_z2', '_z3', '_z4', '_z5'];
+        extraSuffixes.forEach(suf => {
+          const imgSrc = `images/${item.id}_${col.code}${suf}.jpg`;
+          imagesHtml += `
+            <div class="image-card">
+              <img src="${imgSrc}" alt="${item.id}_${col.code}${suf}" loading="lazy" onerror="this.parentElement.remove();">
+            </div>
+          `;
+        });
+
+        colorSec.innerHTML = `
+          <div class="color-title">COLOR: ${col.code} ${col.name}</div>
+          <div class="image-list">
+            ${imagesHtml}
+          </div>
+        `;
+        container.appendChild(colorSec);
+      });
+
+      document.getElementById('prevBtn').disabled = (currentIndex === 0);
+      document.getElementById('nextBtn').disabled = (currentIndex === products.length - 1);
+
+      window.scrollTo(0, 0);
+    }
+
+    function changePage(direction) {
+      const nextIndex = currentIndex + direction;
+      if (nextIndex >= 0 && nextIndex < products.length) {
+        renderProduct(nextIndex);
+      }
+    }
+
+    function handleSearch(e) {
+      if (e.key === 'Enter') {
+        const input = document.getElementById('searchInput');
+        const query = input.value.trim().toUpperCase();
+
+        input.blur();
+
+        if (!query) return;
+
+        const targetIndex = products.findIndex(p => p.id.toUpperCase() === query);
+        if (targetIndex !== -1) {
+          renderProduct(targetIndex);
+          input.value = '';
+        } else {
+          alert('該当する品番が見つかりませんでした: ' + query);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

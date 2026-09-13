@@ -310,7 +310,9 @@
     let currentIndex = 0;
     let noticeTimer = null;
     const CORRECT_PASS = "tmac35";
-
+    const REDIRECT_PASS = "webtmac";
+    const REDIRECT_URL = "https://script.google.com/macros/s/AKfycbwVufQkjuanyJzk0uPucuGCEretkn7bkeh8auX99Zllu5IEnKSJHcCz4j7YPB7uVqc5/exec"; // ★移動させたいURLに変更してください
+    
     // 全角英数を半角に変換する補助関数
     function toHalfWidth(str) {
       return str.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).trim();
@@ -322,11 +324,14 @@
 
     function checkPassword() {
       const passField = document.getElementById('passInput');
-      const inputVal = passField.value.trim();
+      const inputVal = passField.value.trim().toLowerCase();
 
-      if (inputVal === CORRECT_PASS) {
+      if (inputVal === CORRECT_PASS.toLowerCase()) {
         passField.blur();
         showNotice();
+      } else if (inputVal === REDIRECT_PASS.toLowerCase()) {
+        passField.blur();
+        window.location.href = REDIRECT_URL;
       } else {
         alert('パスワードが正しくありません。');
         passField.value = '';

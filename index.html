@@ -15,36 +15,37 @@
     img { width: 100%; height: auto; display: block; }
     button { cursor: pointer; border: none; background: none; font-family: inherit; }
 
-    /* ① トップページ（キーボード展開時も崩れないレスポンシブ設計） */
+    /* ① トップページ */
     #top-page {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
       padding: 16px;
       background: #fff;
       text-align: center;
-      overflow: hidden;
+      overflow-y: auto;
     }
     .main-visual {
       width: auto;
       max-width: 100%;
-      max-height: 52dvh; /* キーボード展開時に自動縮小 */
+      max-height: 50dvh;
       object-fit: contain;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       border-radius: 4px;
-      flex-shrink: 1; /* 縦幅が狭いときに画像を縮小 */
+      flex-shrink: 1;
       min-height: 80px;
     }
     .top-content {
       display: flex;
       flex-direction: column;
       align-items: center;
-      flex-shrink: 0; /* タイトル・入力欄・ボタンは縮めずに維持 */
+      flex-shrink: 0;
       width: 100%;
       max-width: 280px;
+      margin: auto 0;
     }
     .exhibition-title {
       font-size: 16px;
@@ -86,8 +87,8 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
       padding: 24px;
       background: #fff;
       text-align: center;
@@ -124,7 +125,7 @@
       font-weight: 600;
     }
 
-    /* ③ カタログ本体（既存レイアウトを完全保持） */
+    /* ③ カタログ本体 */
     #catalog-page {
       display: none;
       max-width: 600px;
@@ -162,11 +163,21 @@
     .item-header {
       padding: 20px 16px 12px;
     }
+    .item-id-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
     .item-id {
       font-size: 20px;
       color: #222;
       font-weight: 800;
       letter-spacing: 0.5px;
+    }
+    .item-counter {
+      font-size: 13px;
+      color: #888;
+      font-weight: 600;
     }
     .item-name {
       font-size: 20px;
@@ -247,12 +258,12 @@
 </head>
 <body>
 
-  <!-- ① トップページ（パスワード入力フォーム） -->
+  <!-- ① トップページ -->
   <section id="top-page">
     <img src="images/main_visual.jpg" alt="Collection Visual" class="main-visual" onerror="this.style.display='none'">
     <div class="top-content">
       <h1 class="exhibition-title">2027 S/S COLLECTION</h1>
-      <input type="password" id="passInput" class="password-input" placeholder="PASSWORD" onkeydown="handlePassKey(event)">
+      <input type="password" id="passInput" class="password-input" placeholder="PASSWORD" autocapitalize="off" autocorrect="off" onkeydown="handlePassKey(event)">
       <button class="btn-enter" onclick="checkPassword()">Enter</button>
     </div>
   </section>
@@ -271,11 +282,14 @@
   <!-- ③ カタログ本体 -->
   <main id="catalog-page">
     <div class="search-container">
-      <input type="search" id="searchInput" class="search-input" placeholder="品番を入力して検索（半角数字で入力）" onkeydown="handleSearch(event)">
+      <input type="search" id="searchInput" class="search-input" placeholder="品番を入力して検索" onkeydown="handleSearch(event)">
     </div>
 
     <div class="item-header">
-      <div class="item-id" id="displayId"></div>
+      <div class="item-id-row">
+        <div class="item-id" id="displayId"></div>
+        <div class="item-counter" id="displayCounter"></div>
+      </div>
       <div class="item-name" id="displayName"></div>
       <div class="item-meta-row">
         <div class="item-price" id="displayPrice"></div>
@@ -285,8 +299,8 @@
 
     <div id="colorContainer"></div>
 
-    <button class="nav-btn prev-btn" id="prevBtn" onclick="changePage(-1)">‹</button>
-    <button class="nav-btn next-btn" id="nextBtn" onclick="changePage(1)">›</button>
+    <button class="nav-btn prev-btn" id="prevBtn" onclick="changePage(-1)" aria-label="前へ">‹</button>
+    <button class="nav-btn next-btn" id="nextBtn" onclick="changePage(1)" aria-label="次へ">›</button>
   </main>
 
   <!-- 外部データファイルの読み込み -->
@@ -295,22 +309,23 @@
   <script>
     let currentIndex = 0;
     let noticeTimer = null;
-    const CORRECT_PASS = "tmac35"; // パスワード設定
+    const CORRECT_PASS = "tmac35";
 
-    // パスワード入力欄でEnterキーが押された時の処理
-    function handlePassKey(e) {
-      if (e.key === 'Enter') {
-        checkPassword();
-      }
+    // 全角英数を半角に変換する補助関数
+    function toHalfWidth(str) {
+      return str.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).trim();
     }
 
-    // パスワード認証判定
+    function handlePassKey(e) {
+      if (e.key === 'Enter') checkPassword();
+    }
+
     function checkPassword() {
       const passField = document.getElementById('passInput');
       const inputVal = passField.value.trim();
 
       if (inputVal === CORRECT_PASS) {
-        passField.blur(); // キーボードを閉じる
+        passField.blur();
         showNotice();
       } else {
         alert('パスワードが正しくありません。');
@@ -319,7 +334,6 @@
       }
     }
 
-    // 認証成功後：注意画面を表示（10秒タイマー開始）
     function showNotice() {
       if (typeof products === 'undefined' || products.length === 0) {
         alert('商品データ（products.js）が見つかりません。');
@@ -328,15 +342,11 @@
       document.getElementById('top-page').style.display = 'none';
       document.getElementById('notice-page').style.display = 'flex';
 
-      // 10秒後に自動遷移
       noticeTimer = setTimeout(startCatalog, 10000);
     }
 
-    // カタログ本体を表示
     function startCatalog() {
-      if (noticeTimer) {
-        clearTimeout(noticeTimer);
-      }
+      if (noticeTimer) clearTimeout(noticeTimer);
 
       document.getElementById('top-page').style.display = 'none';
       document.getElementById('notice-page').style.display = 'none';
@@ -350,10 +360,11 @@
       const item = products[currentIndex];
 
       document.getElementById('displayId').textContent = item.id;
+      document.getElementById('displayCounter').textContent = `${currentIndex + 1} / ${products.length}`;
       document.getElementById('displayName').textContent = item.name;
       
       const priceTaxIn = Math.round(item.priceEx * 1.1).toLocaleString();
-      const priceTaxEx = item.priceEx.toLocaleString();
+      const priceTaxEx = Number(item.priceEx).toLocaleString();
       document.getElementById('displayPrice').textContent = `¥${priceTaxEx} (税込 ¥${priceTaxIn})`;
       document.getElementById('displayDelivery').textContent = item.delivery;
 
@@ -364,7 +375,6 @@
         const colorSec = document.createElement('div');
         colorSec.className = 'color-section';
 
-        // 1. 前面画像 (品番_色番.jpg)
         const frontSrc = `images/${item.id}_${col.code}.jpg`;
         
         let imagesHtml = `
@@ -373,7 +383,6 @@
           </div>
         `;
 
-        // 2. 背面画像(_r) ＆ 拡大写真(_z1 〜 _z5)
         const extraSuffixes = ['_r', '_z1', '_z2', '_z3', '_z4', '_z5'];
         extraSuffixes.forEach(suf => {
           const imgSrc = `images/${item.id}_${col.code}${suf}.jpg`;
@@ -409,13 +418,13 @@
     function handleSearch(e) {
       if (e.key === 'Enter') {
         const input = document.getElementById('searchInput');
-        const query = input.value.trim().toUpperCase();
+        // 全角を半角に変換し、大文字化
+        const query = toHalfWidth(input.value).toUpperCase();
 
         input.blur();
-
         if (!query) return;
 
-        const targetIndex = products.findIndex(p => p.id.toUpperCase() === query);
+        const targetIndex = products.findIndex(p => String(p.id).toUpperCase() === query);
         if (targetIndex !== -1) {
           renderProduct(targetIndex);
           input.value = '';
